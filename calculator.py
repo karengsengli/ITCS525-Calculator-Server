@@ -10,7 +10,7 @@ _number_percent = re.compile(r"(?P<n>\d+(?:\.\d+)?)%")
 
 def expand_percent(expr: str) -> str:
     """Handle A op B% and standalone N% patterns."""
-    s = expr.replace("×", "*").replace("÷", "/")
+    s = expr
     while True:
         # Replace A op B%
         m = _percent_pair.search(s)
