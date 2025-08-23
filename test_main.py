@@ -5,21 +5,21 @@ from main import app  # or whatever your app module is
 client = TestClient(app)
 
 def test_basic_division():
-    r = client.post("/calculate", params={"expr": "30/4"})
+    r = client.post("/calculate", json={"expr": "30/4"})
     assert r.status_code == 200
     data = r.json()
     assert data["ok"] is True
     assert abs(data["result"] - 7.5) < 1e-9
 
 def test_percent_subtraction():
-    r = client.post("/calculate", params={"expr": "100 - 6%"})
+    r = client.post("/calculate", json={"expr": "100 - 6%"})
     assert r.status_code == 200
     data = r.json()
     assert data["ok"] is True
     assert abs(data["result"] - 94.0) < 1e-9
 
 def test_standalone_percent():
-    r = client.post("/calculate", params={"expr": "6%"})
+    r = client.post("/calculate", json={"expr": "6%"})
     assert r.status_code == 200
     data = r.json()
     assert data["ok"] is True
@@ -37,7 +37,7 @@ def test_get_empty_history():
     assert len(data) == 0
 
 def test_get_one_history():
-    r = client.post("/calculate", params={"expr": "6%"})
+    r = client.post("/calculate", json={"expr": "6%"})
     assert r.status_code == 200
     data = r.json()
     assert data["ok"] is True
@@ -52,7 +52,7 @@ def test_get_three_history():
     r = client.delete("/history")
     assert r.status_code == 200
     for expr in ["6%", "100 - 6%", "30/4"]:
-        r = client.post("/calculate", params={"expr": expr})
+        r = client.post("/calculate", json={"expr": expr})
         assert r.status_code == 200
         data = r.json()
         assert data["ok"] is True

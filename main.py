@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from asteval import Interpreter
 
 from calculator import expand_percent
+from models import Expression, CalculatorLog   # <-- import Pydantic models
 
 HISTORY_MAX = 1000
 history = deque(maxlen=HISTORY_MAX)
@@ -24,27 +25,31 @@ aeval = Interpreter(minimal=True, usersyms={"pi": math.pi, "e": math.e})
 
 
 @app.post("/calculate")
-def calculate(expr: str):
+def calculate(expression: Expression):   # <-- use Expression model
     try:
-        code = expand_percent(expr)
+        code = expression.expand_percent_expr()
         result = aeval(code)
         if aeval.error:
             msg = "; ".join(str(e.get_error()) for e in aeval.error)
             aeval.error.clear()
-            return {"ok": False, "expr": expr, "result": "", "error": msg}
-        history.appendleft({
-            "timestamp": datetime.now().isoformat() + "Z",
-            "expr": expr,
-            "result": result,
-        })
-        return {"ok": True, "expr": expr, "result": result, "error": ""}
+            return {"ok": False, "expr": expression.expr, "result": "", "error": msg}
+
+        log = CalculatorLog(
+            timestamp=datetime.now(),
+            expr=expression.expr,
+            result=result,
+        )
+        history.appendleft(log.dict())   # store as dict for serialization
+
+        return {"ok": True, "expr": expression.expr, "result": result, "error": ""}
     except Exception as e:
-        return {"ok": False, "expr": expr, "error": str(e)}
+        return {"ok": False, "expr": expression.expr, "error": str(e)}
 
 
-@app.get("/history")
+@app.get("/history", response_model=list[CalculatorLog])   # <-- enforce response model
 def get_history(limit: int = 50):
     return list(history)[: max(0, min(limit, HISTORY_MAX))]
+
 
 @app.delete("/history")
 def clear_history():

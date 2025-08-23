@@ -6,11 +6,11 @@ _percent_pair = re.compile(r"""
     \s*(?P<op>[+\-*/])\s*
     (?P<b>\d+(?:\.\d+)?)%
 """, re.VERBOSE)
-_number_percent = re.compile(r"(?P<n>\d+(?:\.\d+)?)%")
+#_number_percent = re.compile(r"(?P<n>\d+(?:\.\d+)?)%")
 
 def expand_percent(expr: str) -> str:
     """Handle A op B% and standalone N% patterns."""
-    s = expr
+    s = expr.replace("×", "*").replace("÷", "/")
     while True:
         # Replace A op B%
         m = _percent_pair.search(s)
@@ -26,6 +26,11 @@ def expand_percent(expr: str) -> str:
         s = s[:m.start()] + repl + s[m.end():]
 
     # Replace B%
-    s = _number_percent.sub(lambda m: f"({m.group('n')}/100)", s)
+    #s = _number_percent.sub(lambda m: f"({m.group('n')}/100)", s)
+
+    # Replace standalone N% (handle "N%X" as (N/100)*X)
+    s = re.sub(r"(\d+(?:\.\d+)?)%(?=\d|\()", r"(\1/100)*", s)
+    # Replace simple N%
+    s = re.sub(r"(\d+(?:\.\d+)?)%", r"(\1/100)", s)
     return s
 
