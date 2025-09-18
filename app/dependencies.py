@@ -1,5 +1,6 @@
 import re
-
+from collections import deque
+from fastapi import Depends
 
 _percent_pair = re.compile(r"""
     (?P<a>\d+(?:\.\d+)?)
@@ -34,3 +35,10 @@ def expand_percent(expr: str) -> str:
     s = re.sub(r"(\d+(?:\.\d+)?)%", r"(\1/100)", s)
     return s
 
+
+# ---- history ----
+HISTORY_MAX = 1000
+_history = deque(maxlen=HISTORY_MAX)
+
+def get_history():
+    return _history

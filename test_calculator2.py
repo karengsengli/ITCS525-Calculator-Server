@@ -1,4 +1,4 @@
-from calculator import expand_percent
+from app.routers.calculator import expand_percent
 
 def test_expand_percent():
     assert expand_percent("5 + 10%") == "5 + ((10/100)*5)", (
